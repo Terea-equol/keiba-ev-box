@@ -106,6 +106,29 @@
   .hint{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px;user-select:none}
   .card .hnote,.card .detail{display:none}
   .card.open .hnote,.card.open .detail{display:block}
+  .kIntro{font-size:12.5px;color:#d7e3dd;margin-bottom:10px}
+  .kGuide{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .gcard{border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .gcard h3{font-size:12px;font-weight:800;margin:0 0 5px}
+  .gcard ul{margin:0;padding-left:16px}
+  .gcard li{font-size:12px;color:#d7e3dd;margin:3px 0}
+  .gRide{background:rgba(34,192,125,.08);border-color:rgba(34,192,125,.28)}
+  .gRide h3{color:#bff0d6}
+  .gSkip{background:rgba(239,110,114,.07);border-color:rgba(239,110,114,.28)}
+  .gSkip h3{color:#f4b6b8}
+  .gProfit{background:rgba(231,182,76,.08);border-color:rgba(231,182,76,.28)}
+  .gProfit h3{color:#fbe7b0}
+  .kDay{font-size:12.5px;font-weight:800;color:var(--green);margin:12px 0 7px;padding-left:2px}
+  .kLeg{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+  .kNo{flex:0 0 40px;font-size:12.5px;font-weight:800;color:#cfe0d8;text-align:center}
+  .kMid{flex:1;min-width:0}
+  .kCond{font-size:12px;color:#cdded6}
+  .kAnchor{font-size:12px;color:#e7d9b3;margin-top:2px}
+  .kFit{flex:0 0 auto;font-size:12px;font-weight:800;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+  .fit-good{background:var(--green);color:#04140c}
+  .fit-ok{background:var(--blue);color:#04121f}
+  .fit-warn{background:var(--grayp);color:#0c1512}
+  .kNote{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6}
   .pending{font-size:12.5px;color:#cdded6;background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:8px}
   .disclaimer{font-size:11px;color:var(--muted);margin-top:22px;text-align:center;line-height:1.6}
 </style>
@@ -120,6 +143,12 @@
     function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
     function betRow(label, text){ var d=el('div','betSub'); d.appendChild(el('b',null,label+'：')); d.appendChild(document.createTextNode(text)); return d; }
     function labeledBet(label, text, cls){ var d=el('div',cls); d.appendChild(el('span','betLabel',label)); d.appendChild(document.createTextNode(text)); return d; }
+    function fitClass(f){ return f==='◎' ? 'good' : (f==='○' ? 'ok' : 'warn'); }
+    function guideCard(title, items, cls){
+      var d=el('div','gcard '+cls); d.appendChild(el('h3',null,title));
+      var ul=el('ul'); (items||[]).forEach(function(it){ ul.appendChild(el('li',null,it)); }); d.appendChild(ul);
+      return d;
+    }
     var root = document.getElementById('app');
 
     var head = el('header','head');
@@ -167,6 +196,35 @@
       });
     }
 
+    if(D.korogashi){
+      var k = D.korogashi;
+      var ksec = el('section','block');
+      ksec.appendChild(el('h2','blockTitle', '🎲 ' + (k.title||'複勝転がし')));
+      if(k.intro) ksec.appendChild(el('div','kIntro', k.intro));
+      if(k.guide){
+        var g = el('div','kGuide');
+        g.appendChild(guideCard('🟢 乗る基準', k.guide.ride, 'gRide'));
+        g.appendChild(guideCard('🔴 スキップ', k.guide.skip, 'gSkip'));
+        g.appendChild(guideCard('💰 利確', k.guide.profit, 'gProfit'));
+        ksec.appendChild(g);
+      }
+      (k.days||[]).forEach(function(d){
+        ksec.appendChild(el('div','kDay', d.day));
+        (d.legs||[]).forEach(function(lg){
+          var row = el('div','kLeg');
+          row.appendChild(el('span','kNo', lg.no));
+          var mid = el('div','kMid');
+          mid.appendChild(el('div','kCond', lg.cond));
+          if(lg.anchor) mid.appendChild(el('div','kAnchor', '軸: '+lg.anchor));
+          row.appendChild(mid);
+          if(lg.fit) row.appendChild(el('span','kFit fit-'+fitClass(lg.fit), lg.fit));
+          ksec.appendChild(row);
+        });
+      });
+      if(k.note) ksec.appendChild(el('div','kNote', k.note));
+      root.appendChild(ksec);
+    }
+
     if(D.pending) root.appendChild(el('div','pending', D.pending));
     if(D.disclaimer) root.appendChild(el('div','disclaimer', D.disclaimer));
 
@@ -201,7 +259,6 @@
       });
       c.appendChild(hl);
 
-      // おすすめ買い目：本線(最適券種)＋5頭BOX を常時表示、配分/狙いは展開時
       if(r.bets){
         var b = el('div','bets');
         b.appendChild(el('div','betsTitle', '💴 おすすめ買い目' + (r.bets.stance ? '（'+r.bets.stance+'）' : '')));
