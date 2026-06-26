@@ -1,0 +1,16 @@
+{
+  "name": "競馬 期待値ボックス",
+  "short_name": "期待値BOX",
+  "description": "今週の期待値レースと3連複5頭ボックス",
+  "lang": "ja",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1310",
+  "theme_color": "#0b3d2e",
+  "icons": [
+    { "src": "icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

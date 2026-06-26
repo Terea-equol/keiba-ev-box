@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>競馬 期待値ボックス</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="期待値BOX">
+<meta name="theme-color" content="#0b3d2e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b3d2e'/%3E%3Ctext x='50' y='56' font-size='62' text-anchor='middle' dominant-baseline='central' fill='white' font-family='sans-serif'%3E競%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0a1310; --bg2:#0d1a16; --card:#11201b; --card2:#0f1c17;
+    --line:rgba(255,255,255,.09); --text:#e9f0ec; --muted:#8ba79c;
+    --green:#22c07d; --gold:#e7b64c; --blue:#52a8ef; --red:#ef6e72; --grayp:#7d938b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,system-ui,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #15302550, transparent),
+      linear-gradient(180deg,var(--bg),var(--bg2) 60%,#08110e);
+    background-attachment:fixed;
+    min-height:100vh;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:600px;margin:0 auto;
+    padding:calc(env(safe-area-inset-top) + 18px) calc(env(safe-area-inset-right) + 16px)
+            calc(env(safe-area-inset-bottom) + 40px) calc(env(safe-area-inset-left) + 16px);
+  }
+  .head{margin-bottom:14px}
+  .title{font-size:24px;font-weight:800;letter-spacing:.02em;margin:0 0 6px}
+  .headline{
+    display:inline-block;font-size:12.5px;font-weight:700;color:#bff0d6;
+    background:rgba(34,192,125,.13);border:1px solid rgba(34,192,125,.3);
+    padding:4px 10px;border-radius:999px;margin-bottom:6px;
+  }
+  .updated{font-size:12px;color:var(--muted)}
+  .note{
+    font-size:13px;color:#dfe9e3;background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--gold);border-radius:10px;padding:10px 12px;margin:14px 0;
+  }
+  .block{margin-top:22px}
+  .blockTitle{
+    font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.08em;
+    text-transform:none;margin:0 0 10px;padding-left:2px;
+  }
+  .policy{display:flex;flex-direction:column;gap:8px}
+  .prow{display:flex;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .ph{flex:0 0 64px;font-size:12px;font-weight:800;color:var(--green)}
+  .pt{flex:1;font-size:12.5px;color:#d7e3dd}
+  .card{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }
+  .cardTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+  .venue{font-size:11px;font-weight:800;color:#06120d;background:var(--green);padding:2px 8px;border-radius:6px}
+  .rno{font-size:12px;font-weight:700;color:#cfe0d8}
+  .post{font-size:11.5px;color:var(--muted)}
+  .rname{font-size:18px;font-weight:800;margin:2px 0}
+  .rsub{font-size:12px;color:var(--muted)}
+  .verdict{
+    flex:0 0 auto;font-size:12px;font-weight:800;color:#06120d;background:var(--gold);
+    padding:5px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .verdictNote{font-size:12px;color:#cdded6;margin:8px 0 4px}
+  .horses{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .horse{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .hrow{display:flex;align-items:center;gap:10px}
+  .num{
+    flex:0 0 30px;height:26px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;color:#cfe0d8;background:#0a1612;border:1px solid var(--line);border-radius:7px;
+  }
+  .hname{flex:1;font-size:15px;font-weight:700}
+  .tag{flex:0 0 auto;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+  .tag.gold{color:#3a2c06;background:var(--gold)}
+  .tag.green{color:#04140c;background:var(--green)}
+  .tag.blue{color:#04121f;background:var(--blue)}
+  .tag.red{color:#220607;background:var(--red)}
+  .tag.muted{color:#0c1512;background:var(--grayp)}
+  .hnote{font-size:12px;color:#b8cabf;margin-top:6px;padding-left:40px}
+  .detail{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+  .ev{font-size:12.5px;color:#e7d9b3;margin-bottom:6px}
+  .memo{font-size:12.5px;color:#cdded6}
+  .hint{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px;user-select:none}
+  .card .hnote,.card .detail{display:none}
+  .card.open .hnote,.card.open .detail{display:block}
+  .pending{font-size:12.5px;color:#cdded6;background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:8px}
+  .disclaimer{font-size:11px;color:var(--muted);margin-top:22px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+  <main class="wrap" id="app"></main>
+  <script src="data.js"></script>
+  <script>
+  (function(){
+    var D = window.KEIBA_DATA || {};
+    var tagColor = { "軸":"gold", "◎":"green", "○":"blue", "△":"muted", "▲":"red" };
+    function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+    var root = document.getElementById('app');
+
+    var head = el('header','head');
+    head.appendChild(el('h1','title', D.title || '競馬 期待値ボックス'));
+    if(D.headline) head.appendChild(el('div','headline', D.headline));
+    head.appendChild(el('div','updated', '更新: ' + (D.updated||'-')));
+    root.appendChild(head);
+
+    if(D.note) root.appendChild(el('div','note', D.note));
+
+    if(D.policy && D.policy.length){
+      var sec = el('section','block');
+      sec.appendChild(el('h2','blockTitle','今週の方針'));
+      var grid = el('div','policy');
+      D.policy.forEach(function(p){
+        var row = el('div','prow');
+        row.appendChild(el('span','ph', p.h));
+        row.appendChild(el('span','pt', p.t));
+        grid.appendChild(row);
+      });
+      sec.appendChild(grid);
+      root.appendChild(sec);
+    }
+
+    var races = D.races || [];
+    if(races.length){
+      var order=[], byDay={};
+      races.forEach(function(r){ var d=r.day||'-'; if(!byDay[d]){byDay[d]=[];order.push(d);} byDay[d].push(r); });
+      order.forEach(function(day){
+        var sec = el('section','block');
+        sec.appendChild(el('h2','blockTitle', day));
+        byDay[day].forEach(function(r){ sec.appendChild(card(r)); });
+        root.appendChild(sec);
+      });
+    }
+
+    if(D.pending) root.appendChild(el('div','pending', D.pending));
+    if(D.disclaimer) root.appendChild(el('div','disclaimer', D.disclaimer));
+
+    function card(r){
+      var c = el('article','card');
+      var top = el('div','cardTop');
+      var left = el('div','cardHead');
+      var meta = el('div','meta');
+      if(r.venue) meta.appendChild(el('span','venue', r.venue));
+      if(r.no) meta.appendChild(el('span','rno', r.no));
+      if(r.post) meta.appendChild(el('span','post', '発走 '+r.post));
+      left.appendChild(meta);
+      left.appendChild(el('div','rname', r.name||''));
+      var sub = el('div','rsub');
+      var subtxt = [r.course, r.field].filter(Boolean).join('  /  ');
+      sub.textContent = subtxt;
+      left.appendChild(sub);
+      top.appendChild(left);
+      if(r.verdict) top.appendChild(el('div','verdict', r.verdict));
+      c.appendChild(top);
+      if(r.verdictNote) c.appendChild(el('div','verdictNote', r.verdictNote));
+
+      var hl = el('div','horses');
+      (r.box||[]).forEach(function(h){
+        var row = el('div','horse');
+        var hr = el('div','hrow');
+        hr.appendChild(el('span','num', (h.num!=null && h.num!=='') ? h.num : '－'));
+        hr.appendChild(el('span','hname', h.name||''));
+        if(h.tag) hr.appendChild(el('span','tag '+(tagColor[h.tag]||'muted'), h.tag));
+        row.appendChild(hr);
+        if(h.note) row.appendChild(el('div','hnote', h.note));
+        hl.appendChild(row);
+      });
+      c.appendChild(hl);
+
+      var detail = el('div','detail');
+      if(r.ev) detail.appendChild(el('div','ev', '想定配当: '+r.ev));
+      if(r.memo) detail.appendChild(el('div','memo', '🏁 '+r.memo));
+      c.appendChild(detail);
+
+      var hint = el('div','hint','タップで根拠を表示 ▾');
+      c.appendChild(hint);
+      c.addEventListener('click', function(){
+        var open = c.classList.toggle('open');
+        hint.textContent = open ? '閉じる ▴' : 'タップで根拠を表示 ▾';
+      });
+      return c;
+    }
+
+    if('serviceWorker' in navigator && location.protocol === 'https:'){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    }
+  })();
+  </script>
+</body>
+</html>
