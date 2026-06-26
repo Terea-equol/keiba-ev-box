@@ -51,12 +51,16 @@
   .block{margin-top:22px}
   .blockTitle{
     font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.08em;
-    text-transform:none;margin:0 0 10px;padding-left:2px;
+    margin:0 0 10px;padding-left:2px;
   }
   .policy{display:flex;flex-direction:column;gap:8px}
   .prow{display:flex;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
   .ph{flex:0 0 64px;font-size:12px;font-weight:800;color:var(--green)}
   .pt{flex:1;font-size:12.5px;color:#d7e3dd}
+  .strategy{background:linear-gradient(180deg,#13241d,#0f1c17);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:12px;padding:12px 14px;margin-top:14px}
+  .strategy h2{font-size:13px;font-weight:800;color:#bff0d6;margin:0 0 8px}
+  .strategy ul{margin:0;padding-left:18px}
+  .strategy li{font-size:12.5px;color:#d7e3dd;margin:5px 0}
   .card{
     background:linear-gradient(180deg,var(--card),var(--card2));
     border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;
@@ -89,6 +93,11 @@
   .tag.red{color:#220607;background:var(--red)}
   .tag.muted{color:#0c1512;background:var(--grayp)}
   .hnote{font-size:12px;color:#b8cabf;margin-top:6px;padding-left:40px}
+  .bets{margin-top:11px;border-top:1px dashed var(--line);padding-top:10px}
+  .betsTitle{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.04em;margin-bottom:6px}
+  .betMain{font-size:13.5px;font-weight:800;color:#fbe7b0;background:rgba(231,182,76,.10);border:1px solid rgba(231,182,76,.30);border-radius:9px;padding:9px 11px;line-height:1.45}
+  .betSub{font-size:12.5px;color:#cdded6;margin-top:7px}
+  .betSub b{color:#e9f0ec}
   .detail{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
   .ev{font-size:12.5px;color:#e7d9b3;margin-bottom:6px}
   .memo{font-size:12.5px;color:#cdded6}
@@ -107,6 +116,7 @@
     var D = window.KEIBA_DATA || {};
     var tagColor = { "軸":"gold", "◎":"green", "○":"blue", "△":"muted", "▲":"red" };
     function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+    function betRow(label, text){ var d=el('div','betSub'); d.appendChild(el('b',null,label+'：')); d.appendChild(document.createTextNode(text)); return d; }
     var root = document.getElementById('app');
 
     var head = el('header','head');
@@ -129,6 +139,17 @@
       });
       sec.appendChild(grid);
       root.appendChild(sec);
+    }
+
+    if(D.strategy){
+      var s = el('section','strategy');
+      s.appendChild(el('h2',null, D.strategy.title || '買い方の方針'));
+      if(D.strategy.points && D.strategy.points.length){
+        var ul = el('ul');
+        D.strategy.points.forEach(function(p){ ul.appendChild(el('li',null,p)); });
+        s.appendChild(ul);
+      }
+      root.appendChild(s);
     }
 
     var races = D.races || [];
@@ -157,8 +178,7 @@
       left.appendChild(meta);
       left.appendChild(el('div','rname', r.name||''));
       var sub = el('div','rsub');
-      var subtxt = [r.course, r.field].filter(Boolean).join('  /  ');
-      sub.textContent = subtxt;
+      sub.textContent = [r.course, r.field].filter(Boolean).join('  /  ');
       left.appendChild(sub);
       top.appendChild(left);
       if(r.verdict) top.appendChild(el('div','verdict', r.verdict));
@@ -178,16 +198,29 @@
       });
       c.appendChild(hl);
 
+      // おすすめ買い目（本線は常時表示、妙味/配分/狙いは展開時）
+      if(r.bets){
+        var b = el('div','bets');
+        b.appendChild(el('div','betsTitle', '💴 おすすめ買い目' + (r.bets.stance ? '（'+r.bets.stance+'）' : '')));
+        if(r.bets.main) b.appendChild(el('div','betMain', r.bets.main));
+        c.appendChild(b);
+      }
+
       var detail = el('div','detail');
+      if(r.bets){
+        if(r.bets.value) detail.appendChild(betRow('妙味', r.bets.value));
+        if(r.bets.alloc) detail.appendChild(betRow('配分', r.bets.alloc));
+        if(r.bets.note)  detail.appendChild(betRow('狙い', r.bets.note));
+      }
       if(r.ev) detail.appendChild(el('div','ev', '想定配当: '+r.ev));
       if(r.memo) detail.appendChild(el('div','memo', '🏁 '+r.memo));
       c.appendChild(detail);
 
-      var hint = el('div','hint','タップで根拠を表示 ▾');
+      var hint = el('div','hint','タップで買い目の詳細・根拠 ▾');
       c.appendChild(hint);
       c.addEventListener('click', function(){
         var open = c.classList.toggle('open');
-        hint.textContent = open ? '閉じる ▴' : 'タップで根拠を表示 ▾';
+        hint.textContent = open ? '閉じる ▴' : 'タップで買い目の詳細・根拠 ▾';
       });
       return c;
     }
