@@ -40,12 +40,14 @@ function parseShutuba(html, id) {
   const title = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
   const name = (title.split(/出馬表|\||｜/)[0] || '').trim();
   const body = html.replace(/\s+/g, ' ');
-  const cls = /新馬/.test(body) ? '新馬'
-    : /未勝利/.test(body) ? '未勝利'
-    : /(3勝|３勝)/.test(body) ? '3勝'
-    : /(2勝|２勝)/.test(body) ? '2勝'
-    : /(1勝|１勝)/.test(body) ? '1勝'
-    : /(G[ⅠⅡⅢ]|（G|\(G|オープン|ＯＰ)/.test(body) ? 'OP/重賞' : '?';
+  // クラスはタイトル(レース名)から判定（body全体は新馬等がナビに常駐し誤検知するため）
+  const cls = /新馬/.test(name) ? '新馬'
+    : /未勝利/.test(name) ? '未勝利'
+    : /(3勝|３勝)/.test(name) ? '3勝'
+    : /(2勝|２勝)/.test(name) ? '2勝'
+    : /(1勝|１勝)/.test(name) ? '1勝'
+    : /[（(]G[ⅠⅡⅢ123]/.test(name) ? 'OP/重賞'
+    : /特別|ステークス|記念|杯|賞|カップ|Ｓ/.test(name) ? '条件/特別' : '?';
   const dm = body.match(/([芝ダ])\s?(\d{3,4})/);
   const dist = dm ? `${dm[1]}${dm[2]}` : '';
   const horses = new Set(); const hre = /\/horse\/(\d{6,12})/g; let h;
@@ -57,10 +59,10 @@ function judge(r) {
   if (r.cls === '新馬' || r.cls === '未勝利') return { call: '見送り', conf: 1, note: `${r.cls}は読みづらく見送り` };
   if (!r.field || r.field <= 7) return { call: '見送り', conf: 1, note: '少頭数で配当妙味薄' };
   if (r.field <= 9) return { call: '様子見', conf: 1, note: 'やや少頭数、買うなら絞る' };
+  if (r.cls === '?') return { call: '様子見', conf: 1, note: 'クラス判定不可、現地で確認' };
   if (r.cls === 'OP/重賞') return { call: '参戦', conf: 3, note: 'オープン/重賞の多頭数戦。ワイド/3連複' };
-  if (r.cls === '2勝' || r.cls === '3勝') return { call: '参戦', conf: 3, note: '条件特別の多頭数戦。ワイド/3連複' };
   if (r.cls === '1勝') return { call: '参戦', conf: 2, note: '1勝の多頭数戦。ワイド/3連複' };
-  return { call: '様子見', conf: 1, note: '判定保留' };
+  return { call: '参戦', conf: 2, note: '条件/特別の多頭数戦。ワイド/3連複' };
 }
 
 const dowJ = ['日', '月', '火', '水', '木', '金', '土'];
