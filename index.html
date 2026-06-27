@@ -137,6 +137,17 @@
   .fit-ok{background:var(--blue);color:#04121f}
   .fit-warn{background:var(--grayp);color:#0c1512}
   .kNote{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6}
+  .scRow{display:flex;align-items:center;gap:9px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:5px}
+  .scNo{flex:0 0 38px;font-size:12px;font-weight:800;color:#cfe0d8;text-align:center}
+  .scMid{flex:1;min-width:0}
+  .scCond{font-size:11.5px;color:#dbe6e0}
+  .scNote{font-size:11px;color:var(--muted);margin-top:1px}
+  .scRight{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .scCall{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .call-go{background:var(--green);color:#04140c}
+  .call-skip{background:var(--grayp);color:#0c1512}
+  .call-watch{background:var(--blue);color:#04121f}
+  .scConf{font-size:10px;color:var(--gold);letter-spacing:1px}
   .pending{font-size:12.5px;color:#cdded6;background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:8px}
   .disclaimer{font-size:11px;color:var(--muted);margin-top:22px;text-align:center;line-height:1.6}
 </style>
@@ -152,6 +163,7 @@
     function betRow(label, text){ var d=el('div','betSub'); d.appendChild(el('b',null,label+'：')); d.appendChild(document.createTextNode(text)); return d; }
     function labeledBet(label, text, cls){ var d=el('div',cls); d.appendChild(el('span','betLabel',label)); d.appendChild(document.createTextNode(text)); return d; }
     function fitClass(f){ return f==='◎' ? 'good' : (f==='○' ? 'ok' : 'warn'); }
+    function stars(n){ var s=''; for(var i=0;i<n;i++){ s+='★'; } return s; }
     function guideCard(title, items, cls){
       var d=el('div','gcard '+cls); d.appendChild(el('h3',null,title));
       var ul=el('ul'); (items||[]).forEach(function(it){ ul.appendChild(el('li',null,it)); }); d.appendChild(ul);
@@ -210,6 +222,31 @@
         byDay[day].forEach(function(r){ sec.appendChild(card(r)); });
         root.appendChild(sec);
       });
+    }
+
+    if(D.scan){
+      var sc = D.scan;
+      var ssec = el('section','block');
+      ssec.appendChild(el('h2','blockTitle', '📋 ' + (sc.title||'全レース判定')));
+      if(sc.intro) ssec.appendChild(el('div','kIntro', sc.intro));
+      (sc.days||[]).forEach(function(d){
+        ssec.appendChild(el('div','kDay', d.day));
+        (d.races||[]).forEach(function(rc){
+          var row = el('div','scRow');
+          row.appendChild(el('span','scNo', rc.no));
+          var mid = el('div','scMid');
+          mid.appendChild(el('div','scCond', rc.cond));
+          if(rc.note) mid.appendChild(el('div','scNote', rc.note));
+          row.appendChild(mid);
+          var right = el('div','scRight');
+          var cc = rc.call==='参戦' ? 'call-go' : (rc.call==='見送り' ? 'call-skip' : 'call-watch');
+          right.appendChild(el('div','scCall '+cc, rc.call||''));
+          if(rc.conf) right.appendChild(el('div','scConf', stars(rc.conf)));
+          row.appendChild(right);
+          ssec.appendChild(row);
+        });
+      });
+      root.appendChild(ssec);
     }
 
     if(D.korogashi){
